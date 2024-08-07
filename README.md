@@ -1,3 +1,5 @@
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.leaguelugas/springmc-core.svg)](https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core)
+
 # SpringMC Framework for Minecraft plugin development
 
 This project provides various solutions to make it easier to develop Minecraft plugins.
