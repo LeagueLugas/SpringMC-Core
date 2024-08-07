@@ -3,7 +3,10 @@
 This project provides various solutions to make it easier to develop Minecraft plugins.
 Enhance your productivity by solving unnecessary and repetitive code with this framework!
 
-## <a href="https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core">Install</a>
+## Install
+###### <a href="https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core">(click to visit maven central)</a>
+
+
 Maven
 ```
 <dependency>
