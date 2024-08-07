@@ -3,22 +3,22 @@
 This project provides various solutions to make it easier to develop Minecraft plugins.
 Enhance your productivity by solving unnecessary and repetitive code with this framework!
 
-## Install
+## <a href="https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core">Install</a>
 Maven
 ```
 <dependency>
     <groupId>io.github.leaguelugas</groupId>
     <artifactId>springmc-core</artifactId>
-    <version>0.8.0</version>
+    <version>{version}</version>
 </dependency>
 ```
 Gradle
 ```
-implementation 'io.github.leaguelugas:springmc-core:0.8.0'
+implementation 'io.github.leaguelugas:springmc-core:{version}'
 ```
 Gradle (Kotlin)
 ```
-implementation("io.github.leaguelugas:springmc-core:<version>")
+implementation("io.github.leaguelugas:springmc-core:{version}")
 ```
 
 ## Usage
