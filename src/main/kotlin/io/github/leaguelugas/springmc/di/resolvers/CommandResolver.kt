@@ -59,7 +59,7 @@ class CommandResolver(
                         return false
                     }
 
-                    if (annotation.permissions.any { sender.hasPermission(it) }) {
+                    if (annotation.permissions.isEmpty() || annotation.permissions.any { sender.hasPermission(it) } || sender.isOp) {
                         runCatching {
                             instance.execute(sender, args)
                         }.onFailure { exception: Throwable ->
