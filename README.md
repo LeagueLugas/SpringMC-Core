@@ -66,11 +66,12 @@ class TestCommand : SpringCommand {
 }
 ```
 ### Event Listener
-You need to implement the SpringListener<T : Event> interface, and if this interface is not present, an error will occur when loading the plugin.
+You need to implement the SpringListener interface, and if this interface is not present, an error will occur when loading the plugin.
 ```kotlin
 @EventListener
-class TestListener : SpringListener<InventoryOpenEvent> {
-    override fun onEvent(event: InventoryOpenEvent) {
+class TestListener : SpringListener {
+    @EventHandler // org.bukkit.event
+    fun onEvent(event: InventoryOpenEvent) {
         val player = event.player
         player.sendMessage(MessageUtil.color("Opened inventory"))
     }
