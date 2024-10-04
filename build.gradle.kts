@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.leaguelugas"
-version = "0.8.2"
+version = "0.8.4"
 description = "A Framework for developing Minecraft plugin"
 
 repositories {

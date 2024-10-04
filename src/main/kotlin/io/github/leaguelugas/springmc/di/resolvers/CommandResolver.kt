@@ -82,7 +82,7 @@ class CommandResolver(
                     args: Array<String>,
                 ): List<String> {
                     runCatching {
-                        if (annotation.permissions.any { sender.hasPermission(it) }) {
+                        if (annotation.permissions.isEmpty() || annotation.permissions.any { sender.hasPermission(it) }) {
                             return instance.tabComplete(sender, alias, args)
                         }
                     }.onFailure { it.printStackTrace() }
