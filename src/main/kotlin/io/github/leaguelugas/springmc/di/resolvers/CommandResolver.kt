@@ -4,7 +4,7 @@ import io.github.leaguelugas.springmc.SpringMC
 import io.github.leaguelugas.springmc.command.SpringCommand
 import io.github.leaguelugas.springmc.di.BeanResolver
 import io.github.leaguelugas.springmc.di.annotations.Command
-import io.github.leaguelugas.springmc.util.MessageUtil
+import io.github.leaguelugas.springmc.util.color
 import org.bukkit.command.CommandMap
 import org.bukkit.command.CommandSender
 import org.bukkit.command.ConsoleCommandSender
@@ -52,10 +52,10 @@ class CommandResolver(
                     args: Array<String>,
                 ): Boolean {
                     if (sender is Player && annotation.type == Command.Type.CONSOLE_ONLY) {
-                        sender.sendMessage(MessageUtil.color(instance.errorConsoleOnly()))
+                        sender.sendMessage(instance.errorConsoleOnly().color())
                         return false
                     } else if (sender is ConsoleCommandSender && annotation.type == Command.Type.PLAYER_ONLY) {
-                        sender.sendMessage(MessageUtil.color(instance.errorPlayerOnly()))
+                        sender.sendMessage(instance.errorPlayerOnly().color())
                         return false
                     }
 
@@ -71,7 +71,7 @@ class CommandResolver(
                             exception.printStackTrace()
                         }
                     } else {
-                        sender.sendMessage(MessageUtil.color(instance.errorPermission()))
+                        sender.sendMessage(instance.errorPermission().color())
                     }
                     return true
                 }

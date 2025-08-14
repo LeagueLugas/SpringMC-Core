@@ -22,9 +22,4 @@ abstract class SpringMC : JavaPlugin() {
     override fun onEnable() {
         afterLoadingJob.forEach(Runnable::run)
     }
-
-    override fun reloadConfig() {
-        super.reloadConfig()
-        applicationConfig.reloadConfig()
-    }
 }
