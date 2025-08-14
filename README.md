@@ -1,98 +1,131 @@
+# SpringMC Framework
+
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.leaguelugas/springmc-core.svg)](https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core)
 
-# SpringMC Framework for Minecraft plugin development
+Spring Boot의 개발 방식에서 영감을 받아, 마인크래프트 플러그인 개발의 생산성을 향상시키기 위해 만들어진 코틀린 기반 프레임워크입니다.
+어노테이션 기반의 DI(의존성 주입)와 다양한 모듈을 통해 반복적이고 불필요한 코드를 줄여보세요!
 
-This project provides various solutions to make it easier to develop Minecraft plugins.
-Enhance your productivity by solving unnecessary and repetitive code with this framework!
+## 설치 (Installation)
 
-## Install
-###### <a href="https://central.sonatype.com/artifact/io.github.leaguelugas/springmc-core" target="_blank">(click to visit maven central)</a>
+<details>
+<summary>Maven, Gradle 설정</summary>
 
-
-Maven
-```
+**Maven**
+```xml
 <dependency>
     <groupId>io.github.leaguelugas</groupId>
     <artifactId>springmc-core</artifactId>
-    <version>{version}</version>
+    <version>LATEST_VERSION</version>
 </dependency>
 ```
-Gradle
-```
-implementation 'io.github.leaguelugas:springmc-core:{version}'
-```
-Gradle (Kotlin)
-```
-implementation("io.github.leaguelugas:springmc-core:{version}")
+
+**Gradle (Groovy)**
+```groovy
+implementation 'io.github.leaguelugas:springmc-core:LATEST_VERSION'
 ```
 
-## Usage
-SpringMC automatically stores classes annotated with @Component or its meta-annotations (@Command, @EventListener, @Service) in the Bean container, and the registered beans can be easily used in other beans through dependency injection. 
+**Gradle (Kotlin)**
+```kotlin
+implementation("io.github.leaguelugas:springmc-core:LATEST_VERSION")
+```
+</details>
 
-### Main class
-If the @SpringMCMain annotation is not present, the framework will not recognize the main class. Please ensure to add it.
+---
+
+## 주요 기능 (Features)
+
+SpringMC는 `@Component` 계열 어노테이션(`@Service`, `@Command`, `@EventListener` 등)이 붙은 클래스를 자동으로 스캔하여 DI 컨테이너(Bean)에 등록합니다. 등록된 객체는 다른 클래스에서 주입받아 쉽게 사용할 수 있습니다.
+
+### 1. 의존성 주입 (Dependency Injection)
+
+플러그인의 메인 클래스에 `@SpringMCMain` 어노테이션을 붙여주세요. 이 어노테이션이 없으면 프레임워크가 정상적으로 동작하지 않습니다.
+
 ```kotlin
 @SpringMCMain
-class TestPlugin : SpringMC() {
+class MyPlugin : SpringMC() {
     override fun onEnable() {
-        super.onEnable() // If you override onEnable method, You must call super method  
-        logger.info("Hello, world!")
+        super.onEnable() // onEnable을 오버라이드 할 경우, 반드시 super.onEnable()을 호출해야 합니다.
+        logger.info("MyPlugin has been enabled!")
     }
 }
 ```
-### Command
-You need to implement the SpringCommand interface, and if this interface is not present, an error will occur when loading the plugin.
-```kotlin
-@Command(
-    command = "test",
-    // Since it's set to PLAYER_ONLY type, if a sender other than a player executes the command, the errorPlayerOnly() function's error message is sent.
-    type = Command.Type.PLAYER_ONLY,
-    aliases = ["test2"],
-    description = "This is a test command",
-    usage = "/test",
-    permissions = ["some.required.perm"],
-)
-class TestCommand : SpringCommand {
-    override fun execute(
-        sender: CommandSender,
-        args: Array<String>,
-    ) {
-        if (sender is Player) {
-            sender.sendMessage("Hello, Player!")
-        }
-    }
 
-    override fun errorPlayerOnly(): String = "&4You can override message what you want"
-}
-```
-### Event Listener
-You need to implement the SpringListener interface, and if this interface is not present, an error will occur when loading the plugin.
-```kotlin
-@EventListener
-class TestListener : SpringListener {
-    @EventHandler // org.bukkit.event
-    fun onEvent(event: InventoryOpenEvent) {
-        val player = event.player
-        player.sendMessage(MessageUtil.color("Opened inventory"))
-    }
-}
-```
-### Dependency Injection
-You can follow the DI flow in the following format. Circular references are not allowed, and it is not recommended to inject @Command or @EventListener beans to call functions.
+`@Service` 어노테이션으로 비즈니스 로직을 정의하고, 다른 곳에서 생성자나 필드를 통해 주입받을 수 있습니다.
+
 ```kotlin
 @Service
 class UserManager {
-    fun returnHello(): String {
-        return "Hello"
+    fun getUser(name: String): User {
+        // ...
     }
 }
 
-@Command("test")
-class TestCommand(
-    private val userManager: UserManager,
-): SpringCommand {
+// 생성자 주입 예시
+@Component
+class GameManager(private val userManager: UserManager) {
+    fun startGame(playerName: String) {
+        val user = userManager.getUser(playerName)
+        // ...
+    }
+}
+```
+
+### 2. 커맨드 (Commands)
+
+`@Command` 어노테이션 하나로 커맨드를 간단하게 등록할 수 있습니다.
+
+```kotlin
+@Command(
+    command = "hello",
+    description = "Sends a greeting.",
+    usage = "/hello",
+    permission = "myplugin.hello",
+    aliases = ["hi", "greeting"]
+)
+class HelloCommand : SpringCommand {
     override fun execute(sender: CommandSender, args: Array<String>) {
-        sender.sendMessage(userManager.returnHello())
+        sender.sendMessage("Hello, world!")
+    }
+}
+```
+
+### 3. 이벤트 리스너 (Event Listeners)
+
+`@EventListener`를 클래스에 붙여 이벤트를 처리하는 리스너를 등록합니다.
+
+```kotlin
+@EventListener
+class PlayerJoinListener : SpringListener {
+
+    @EventHandler // Bukkit의 @EventHandler 사용
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        event.player.sendMessage("Welcome to the server!")
+    }
+}
+```
+
+### 4. 스케줄러 (Schedulers)
+
+`@Scheduled` 어노테이션을 사용해 동기/비동기 작업을 간단하게 예약할 수 있습니다.
+
+- `delay`: 최초 실행까지의 대기 시간 (tick)
+- `period`: 반복 실행 간격 (tick)
+- `async`: true로 설정 시 비동기 실행
+
+```kotlin
+@Component
+class BroadcastTask {
+
+    // 20틱(1초) 후 최초 실행, 1200틱(1분)마다 반복
+    @Scheduled(delay = 20L, period = 1200L)
+    fun broadcastMessage() {
+        Bukkit.broadcastMessage("This is a scheduled broadcast!")
+    }
+
+    // 100틱(5초) 후 비동기로 한 번 실행
+    @Scheduled(delay = 100L, async = true)
+    fun runAsyncTask() {
+        // ... 오래 걸리는 비동기 작업
     }
 }
 ```

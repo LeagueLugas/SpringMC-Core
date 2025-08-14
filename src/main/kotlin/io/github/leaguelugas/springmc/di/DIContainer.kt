@@ -9,6 +9,7 @@ import io.github.leaguelugas.springmc.di.annotations.SpringMCMain
 import io.github.leaguelugas.springmc.di.resolvers.CommandResolver
 import io.github.leaguelugas.springmc.di.resolvers.ComponentResolver
 import io.github.leaguelugas.springmc.di.resolvers.EventListenerResolver
+import io.github.leaguelugas.springmc.di.resolvers.ScheduledResolver
 import io.github.leaguelugas.springmc.di.resolvers.ServiceResolver
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -23,7 +24,7 @@ class DIContainer(
     private val plugin: SpringMC,
     private val pluginFile: File,
 ) {
-    private val beans: MutableMap<String, Any> = mutableMapOf()
+    val beans: MutableMap<String, Any> = mutableMapOf()
     private val creationStack: MutableSet<KClass<*>> = mutableSetOf()
     private val beanResolvers: MutableMap<KClass<out Annotation>, BeanResolver<out Annotation>> =
         mutableMapOf(
@@ -78,6 +79,7 @@ class DIContainer(
                     field.set(plugin, beans[field.type.kotlin.qualifiedName])
                 }
             }
+            ScheduledResolver(this).resolve()
             plugin.logger.info("Loaded ${beans.size} beans")
         }
     }
@@ -126,13 +128,17 @@ class DIContainer(
         creationStack.remove(clazz)
     }
 
-    private fun getComponentAnnotation(clazz: KClass<*>): Annotation? =
+    fun getComponentAnnotation(clazz: KClass<*>): Annotation? =
         clazz.annotations.find { annotation ->
             return@find annotation.annotationClass == Component::class ||
                 annotation.annotationClass.annotations.any { metaAnnotation ->
                     metaAnnotation.annotationClass == Component::class
                 }
         }
+
+    fun getComponents(): Collection<Any> = beans.values
+
+    inline fun <reified T> get(): T = beans.values.first { it is T } as T
 
     private fun register(
         key: String,
