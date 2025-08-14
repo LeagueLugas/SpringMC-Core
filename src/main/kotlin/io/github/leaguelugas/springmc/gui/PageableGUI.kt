@@ -15,24 +15,24 @@ abstract class PageableGUI(
     title: String,
 ) : GUI(slotSize, title) {
     private var currentPage: Int = 0
-    private var pages: MutableList<Page> = mutableListOf()
+    private val pages: MutableList<Page> = mutableListOf()
 
     fun getCurrentPage(): Int = currentPage
 
     fun getPages(): List<Page> = pages
 
-    fun hasPage(pageNum: Int): Boolean = pages.size > pageNum
+    fun hasPage(pageNum: Int): Boolean = pageNum in pages.indices
 
     fun addPage() {
-        val previousPage = if (currentPage > 0) pages[currentPage - 1] else null
-        pages.add(
+        val previousPage = pages.lastOrNull()
+        val newPage =
             Page(
                 slots = mutableListOf(),
                 currentPage = pages.size,
                 previousPage = previousPage,
-            ),
-        )
-        if (previousPage != null) previousPage.nextPage = pages.last()
+            )
+        pages.add(newPage)
+        previousPage?.nextPage = newPage
     }
 
     fun addItem(
@@ -41,17 +41,8 @@ abstract class PageableGUI(
         itemStack: ItemStack,
         onClick: InventoryHandler? = null,
     ) {
-        if (!hasPage(pageNum)) {
-            while (pages.size <= pageNum) {
-                addPage()
-            }
-        }
-        val guiItem =
-            GuiItem(
-                page = pageNum,
-                slot = slot,
-                itemStack = itemStack,
-            )
+        while (pages.size <= pageNum) addPage()
+        val guiItem = GuiItem(pageNum, slot, itemStack)
         pages[pageNum].slots.add(guiItem)
         clickMap[guiItem] = onClick
     }
@@ -62,19 +53,14 @@ abstract class PageableGUI(
         itemStack: ItemStack,
         onClick: InventoryHandler? = null,
     ) {
-        for (slot in slots) {
-            addItem(pageNum, slot, itemStack, onClick)
-        }
+        slots.forEach { addItem(pageNum, it, itemStack, onClick) }
     }
 
     fun getClickLambda(
         page: Int,
         slot: Int,
         itemStack: ItemStack,
-    ): InventoryHandler? {
-        val guiItem = GuiItem(page, slot, itemStack)
-        return clickMap[guiItem]
-    }
+    ): InventoryHandler? = clickMap[GuiItem(page, slot, itemStack)]
 
     fun renderNextPage() {
         if (currentPage < pages.size - 1) {
@@ -91,13 +77,10 @@ abstract class PageableGUI(
     }
 
     fun renderGUI(page: Int) {
+        if (!hasPage(page)) return
         clearPage()
-        val currentPage = pages[page]
-        currentPage.title?.let {
-            setTitle(it)
-        }
-        for (guiItem in currentPage.slots) {
-            inventory.setItem(guiItem.slot, guiItem.itemStack)
-        }
+        val targetPage = pages[page]
+        targetPage.title?.let { setTitle(it) }
+        targetPage.slots.forEach { inventory.setItem(it.slot, it.itemStack) }
     }
 }

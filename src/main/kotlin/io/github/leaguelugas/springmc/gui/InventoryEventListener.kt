@@ -12,12 +12,17 @@ class InventoryEventListener : Listener {
         val gui = event.inventory.holder
         val clickedItem = event.currentItem
         val player = event.whoClicked as Player
-        if (event.clickedInventory != null && gui is SGui && clickedItem != null) {
-            event.isCancelled = true
-            val consumer = gui.getClickLambda(slot = event.slot, itemStack = clickedItem)
+        if (event.clickedInventory != null && gui is GUI && clickedItem != null) {
+            val consumer =
+                if (gui is PageableGUI) {
+                    gui.getClickLambda(page = gui.getCurrentPage(), slot = event.slot, itemStack = clickedItem)
+                } else {
+                    gui.getClickLambda(slot = event.slot, itemStack = clickedItem)
+                }
             if (consumer == null) {
                 gui.onClick(player, event)
             } else {
+                event.isCancelled = true
                 consumer.accept(player, clickedItem)
             }
         }
@@ -27,7 +32,7 @@ class InventoryEventListener : Listener {
     fun onInventoryClose(event: InventoryCloseEvent) {
         val gui = event.inventory.holder
         val player = event.player as Player
-        if (gui is SGui.Closeable) {
+        if (gui is Closeable) {
             gui.onInventoryClose(player, event)
         }
     }
